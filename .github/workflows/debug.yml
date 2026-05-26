@@ -1,0 +1,13 @@
+name: Debug Actions
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Test GitHub Actions
+        run: echo "GitHub Actions berhasil jalan"
