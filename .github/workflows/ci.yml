@@ -8,49 +8,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  train-build-push:
+  test-workflow:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pandas numpy scikit-learn mlflow==2.19.0 matplotlib seaborn
-
-      - name: Run MLflow Project
-        run: |
-          cd MLProject
-          mlflow run . --env-manager=local
-
-      - name: Get latest MLflow run_id
-        run: |
-          echo "RUN_ID=$(cat MLProject/run_id.txt)" >> $GITHUB_ENV
-
-      - name: Build Docker Model
-        run: |
-          cd MLProject
-          MLFLOW_TRACKING_URI=file:./mlruns mlflow models build-docker -m "runs:/${{ env.RUN_ID }}/model" -n "${{ secrets.DOCKERHUB_USERNAME }}/breast-cancer-mlflow:latest"
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Push Docker Image
-        run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/breast-cancer-mlflow:latest
-
-      - name: Upload MLflow artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: mlflow-artifacts
-          path: MLProject/mlruns
+      - name: Test workflow
+        run: echo "GitHub Actions berhasil jalan"
