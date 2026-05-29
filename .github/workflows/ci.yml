@@ -1,5 +1,5 @@
-# trigger update 
- name: MLflow CI Advanced
+@'
+name: MLflow CI
 
 on:
   push:
@@ -8,12 +8,39 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-workflow:
+  run-mlflow-project:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set up job
+        run: echo "Starting MLflow CI"
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Test workflow
-        run: echo "GitHub Actions berhasil jalan"
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check environment
+        run: |
+          python --version
+          pip --version
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas numpy scikit-learn mlflow==2.19.0 matplotlib seaborn
+
+      - name: Run MLflow Project
+        run: |
+          cd MLProject
+          mlflow run . --env-manager=local
+
+      - name: Upload MLflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlflow-artifacts
+          path: MLProject/mlruns
+'@ | Set-Content -Path .github\workflows\ci.yml -Encoding UTF8
