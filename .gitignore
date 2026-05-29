@@ -1,0 +1,7 @@
+﻿MLProject/mlruns/
+MLProject/mlartifacts/
+MLProject/run_id.txt
+MLProject/metric_info.json
+MLProject/training_confusion_matrix.png
+__pycache__/
+*.pyc
