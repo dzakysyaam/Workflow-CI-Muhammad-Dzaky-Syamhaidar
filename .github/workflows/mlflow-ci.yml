@@ -34,6 +34,7 @@ jobs:
         run: |
           rm -rf MLProject/mlruns
           rm -rf MLProject/mlartifacts
+          rm -rf docker_model
           rm -f MLProject/run_id.txt
           rm -f MLProject/metric_info.json
           rm -f MLProject/training_confusion_matrix.png
@@ -48,10 +49,37 @@ jobs:
           echo "RUN_ID=$(cat MLProject/run_id.txt)" >> $GITHUB_ENV
           echo "Run ID: $(cat MLProject/run_id.txt)"
 
-      - name: Build Docker Model
+      - name: Prepare Docker model artifact
         run: |
-          cd MLProject
-          MLFLOW_TRACKING_URI=file:./mlruns mlflow models build-docker -m "runs:/${{ env.RUN_ID }}/model" -n "syamdzaky/breast-cancer-mlflow:latest"
+          MODEL_DIR=$(find MLProject/mlruns -type d -path "*/${{ env.RUN_ID }}/artifacts/model" | head -n 1)
+
+          echo "Model directory: $MODEL_DIR"
+
+          if [ -z "$MODEL_DIR" ]; then
+            echo "Model artifact not found"
+            exit 1
+          fi
+
+          mkdir -p docker_model
+          cp -r "$MODEL_DIR" docker_model/model
+
+          cat > Dockerfile <<'EOF'
+          FROM python:3.12-slim
+
+          WORKDIR /app
+
+          RUN pip install --no-cache-dir mlflow==2.19.0 scikit-learn pandas numpy matplotlib seaborn
+
+          COPY docker_model/model /app/model
+
+          EXPOSE 5000
+
+          CMD ["mlflow", "models", "serve", "-m", "/app/model", "--host", "0.0.0.0", "--port", "5000", "--no-conda"]
+          EOF
+
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/breast-cancer-mlflow:latest .
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -61,7 +89,7 @@ jobs:
 
       - name: Push Docker Image
         run: |
-          docker push syamdzaky/breast-cancer-mlflow:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/breast-cancer-mlflow:latest
 
       - name: Upload MLflow artifacts
         uses: actions/upload-artifact@v4
