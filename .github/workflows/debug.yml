@@ -1,5 +1,4 @@
-@'
-name: MLflow CI
+﻿name: MLflow CI
 
 on:
   push:
@@ -40,4 +39,3 @@ jobs:
         with:
           name: mlflow-artifacts
           path: MLProject/mlruns
-'@ | Set-Content -Path .github\workflows\debug.yml -Encoding UTF8
