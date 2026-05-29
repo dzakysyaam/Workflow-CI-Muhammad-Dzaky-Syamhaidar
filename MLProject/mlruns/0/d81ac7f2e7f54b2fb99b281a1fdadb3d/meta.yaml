@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/syamh/SMSML_Muhammad_Dzaky_Syamhaidar/Workflow-CI/MLProject/mlruns/0/d81ac7f2e7f54b2fb99b281a1fdadb3d/artifacts
+end_time: 1780064846220
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: d81ac7f2e7f54b2fb99b281a1fdadb3d
+run_name: CI_RandomForest_Model
+run_uuid: d81ac7f2e7f54b2fb99b281a1fdadb3d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1780064827269
+status: 3
+tags: []
+user_id: syamh

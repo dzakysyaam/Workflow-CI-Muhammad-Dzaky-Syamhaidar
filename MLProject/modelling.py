@@ -1,4 +1,5 @@
-﻿import json
+﻿import os
+import json
 import pandas as pd
 import mlflow
 import mlflow.sklearn
@@ -6,7 +7,15 @@ import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, classification_report, ConfusionMatrixDisplay
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    confusion_matrix,
+    classification_report,
+    ConfusionMatrixDisplay
+)
 
 df = pd.read_csv("dataset_preprocessing/dataset_preprocessed.csv")
 
@@ -21,7 +30,14 @@ X_train, X_test, y_train, y_test = train_test_split(
     stratify=y
 )
 
-with mlflow.start_run() as run:
+run_id_env = os.environ.get("MLFLOW_RUN_ID")
+
+if run_id_env:
+    mlflow.start_run(run_id=run_id_env)
+else:
+    mlflow.start_run(run_name="CI_RandomForest_Model")
+
+try:
     mlflow.set_tag("mlflow.runName", "CI_RandomForest_Model")
 
     model = RandomForestClassifier(
@@ -31,7 +47,6 @@ with mlflow.start_run() as run:
     )
 
     model.fit(X_train, y_train)
-
     y_pred = model.predict(X_test)
 
     accuracy = accuracy_score(y_test, y_pred)
@@ -74,12 +89,16 @@ with mlflow.start_run() as run:
 
     mlflow.log_artifact("training_confusion_matrix.png")
 
+    active_run = mlflow.active_run()
     with open("run_id.txt", "w") as f:
-        f.write(run.info.run_id)
+        f.write(active_run.info.run_id)
 
     print("CI training selesai.")
-    print("Run ID:", run.info.run_id)
+    print("Run ID:", active_run.info.run_id)
     print("Accuracy:", accuracy)
     print("Precision:", precision)
     print("Recall:", recall)
     print("F1 Score:", f1)
+
+finally:
+    mlflow.end_run()
